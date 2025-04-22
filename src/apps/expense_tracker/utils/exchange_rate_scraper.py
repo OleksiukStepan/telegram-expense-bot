@@ -13,5 +13,9 @@ def get_usd_exchange_rate():
     if not rate_tag:
         raise ValueError("Couldn't find USD exchange rate on the page.")
 
-    rate_text = rate_tag.text.strip().replace(",", ".")
-    return float(rate_text)
+    rate_text = rate_tag.text.strip().split()[0].replace(",", ".")
+    return round(float(rate_text), 2)
+
+
+if __name__ == "__main__":
+    print(get_usd_exchange_rate())
