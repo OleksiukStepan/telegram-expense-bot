@@ -1,14 +1,24 @@
-from typing import Type, List
+from datetime import date
+from typing import Type, Optional
 
 from sqlalchemy.orm import Session
 
 from src.apps.expense_tracker.models import Article
 from src.apps.expense_tracker.schemas import ArticleCreate, ArticleUpdate
-from src.apps.expense_tracker.utils import get_usd_exchange_rate
+from src.apps.expense_tracker.utils.exchange_rate_scraper import get_usd_exchange_rate
 
 
-def get_articles(db: Session) -> list[Type[Article]]:
-    return db.query(Article).all()
+def get_articles(
+        db: Session,
+        start_date: Optional[date] = None,
+        end_date: Optional[date] = date.today()
+) -> list[Type[Article]]:
+    query = db.query(Article).filter(Article.date <= end_date)
+
+    if start_date:
+        query = query.filter(Article.date >= start_date)
+
+    return query.all()
 
 
 def get_article(article_id: int, db: Session) -> Type[Article] | None:
@@ -21,7 +31,7 @@ def create_article(article: ArticleCreate, db: Session) -> Article:
 
     db_article = Article(
         name=article.name,
-        date=article.date,
+        date=article.date if article.date else None,
         amount=article.amount,
         amount_usd=round(amount_usd, 2),
     )
