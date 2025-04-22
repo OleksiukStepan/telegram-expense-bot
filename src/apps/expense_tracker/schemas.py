@@ -16,6 +16,7 @@ class ArticleCreate(ArticleBase):
 
 class ArticleRead(ArticleBase):
     id: int
+    date: date
     amount_usd: float
 
     class Config:
