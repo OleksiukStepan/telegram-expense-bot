@@ -1,5 +1,7 @@
+from datetime import date
+
 from aiogram import Router, F
-from aiogram.types import Message
+from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import StateFilter
 
@@ -26,16 +28,37 @@ async def process_name(message: Message, state: FSMContext):
 async def process_amount(message: Message, state: FSMContext):
     await state.update_data(amount=message.text)
     await state.set_state(ExpenseForm.date)
-    await message.answer(" Яка дата витрати?")
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="Сьогодні")]
+        ],
+        resize_keyboard=True,
+        one_time_keyboard=True
+    )
+
+    await message.answer(
+        "📅 Яка дата витрати?\n"
+        "Введи у форматі: <b>YYYY-MM-DD</b>\n"
+        "Або натисни <b>кнопку нижче</b>, щоб використати сьогоднішню дату:",
+        parse_mode="HTML",
+        reply_markup=keyboard
+    )
 
 
 @router.message(StateFilter(ExpenseForm.date))
 async def process_date(message: Message, state: FSMContext):
-    user_date = validate_date(message.text)
+    text = message.text.strip()
 
-    if not user_date:
-        await message.answer("❌ Невірний формат дати. Спробуй ще раз у форматі YYYY-MM-DD.")
-        return
+    if text == "Сьогодні":
+        user_date = date.today()
+    else:
+        user_date = validate_date(text)
+        if not user_date:
+            await message.answer(
+                f"❌ Невірний формат {text}. Спробуй так: <b>2025-04-23</b>",
+                parse_mode="HTML"
+            )
+            return
 
     await state.update_data(date=user_date)
 
