@@ -13,8 +13,10 @@ async def submit_expense(data: dict) -> tuple[bool, str]:
     payload = {
         "name": data["name"],
         "amount": float(data["amount"]),
-        "date": data["date"].isoformat(),
     }
+
+    if "date" in data and data["date"] is not None:
+        payload["date"] = data["date"].isoformat()
 
     try:
         async with httpx.AsyncClient() as client:
